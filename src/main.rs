@@ -4,7 +4,7 @@ pub mod query;
 use manager::FileManager;
 
 fn main() {
-    let dir = String::from("/home/ishi/Tests/accounts");
+    let dir = String::from("");
     let mut file_manager = FileManager {
         directory: String::from(""),
         files: Vec::new(),
