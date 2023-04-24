@@ -1,15 +1,17 @@
 #[cfg(test)]
 mod reader_tests {
-    use account_manager_tui::reader::{TOMLReader, TOMLReaderDefault};
+    use account_manager_tui::reader::TOMLReader;
     use std::{env, fs::File, path::Path};
     const BASE_DIR: &str = "HOME";
     const FOLDER: &str = ".ac";
+    const FILENAME: &str = "accounts.toml";
 
     #[test]
     fn default_init() {
-        let toml_reader_init = TOMLReader::default();
-        assert_eq!(toml_reader_init.directory, BASE_DIR);
-        assert_eq!(toml_reader_init.filename, "accounts.toml");
+        let reader: TOMLReader = TOMLReader::new();
+        let default_dir = format!("{}/{}", env::var(BASE_DIR).unwrap(), &FOLDER);
+        assert_eq!(reader.directory, default_dir);
+        assert_eq!(reader.filename, FILENAME);
     }
 
     #[test]
@@ -21,13 +23,19 @@ mod reader_tests {
 
     #[test]
     fn file_existed() {
-        let dir_file = format!(
-            "{}/{}/{}",
-            env::var(&BASE_DIR).unwrap(),
-            &FOLDER,
-            "accounts.toml"
-        );
+        let dir_file = format!("{}/{}/{}", env::var(&BASE_DIR).unwrap(), &FOLDER, &FILENAME);
         let file = File::open(dir_file).is_ok();
         assert_eq!(file, true);
+    }
+
+    #[test]
+    fn read_file_content() {
+        let reader: TOMLReader = TOMLReader::new();
+        let data = reader.read_from_file();
+        let account = &data["Twitter"];
+        let username = account["username"].as_str().unwrap();
+        let password = account["password"].as_str().unwrap();
+        assert_eq!(username, "adudarkwa");
+        assert_eq!(password, "123456");
     }
 }

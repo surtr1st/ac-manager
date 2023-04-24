@@ -1,25 +1,22 @@
-use std::env;
-use std::fs::{create_dir, File};
-use std::path::Path;
+use std::fs::{create_dir, metadata, File};
+use std::{env, fs};
+use toml::Value;
 
 const BASE_FILENAME: &str = "accounts.toml";
 
+#[derive(Debug)]
 pub struct TOMLReader {
     pub directory: String,
     pub filename: String,
 }
 
-pub trait TOMLReaderDefault {
-    fn default() -> Self;
-}
-
-impl TOMLReaderDefault for TOMLReader {
-    fn default() -> Self {
+impl TOMLReader {
+    pub fn new() -> Self {
         let root = env::var("HOME").unwrap();
         let store_folder = ".ac";
         let default_path = format!("{}/{}", &root, &store_folder);
         let default_file = format!("{}/{}", &default_path, &BASE_FILENAME);
-        let folder_existed = Path::new(&store_folder).exists();
+        let folder_existed = metadata(&default_path).unwrap().is_dir();
         let file_existed = File::open(&default_file).is_ok();
         if !folder_existed {
             create_dir(&default_path).unwrap();
@@ -31,5 +28,11 @@ impl TOMLReaderDefault for TOMLReader {
             directory: default_path,
             filename: BASE_FILENAME.to_string(),
         }
+    }
+
+    pub fn read_from_file(self) -> Value {
+        let file = format!("{}/{}", self.directory, self.filename);
+        let content = fs::read_to_string(&file).unwrap();
+        content.parse::<Value>().unwrap()
     }
 }
