@@ -20,9 +20,8 @@ impl FileManager {
     }
 
     pub fn read_content(self, index: i32) -> String {
-        let mut selected_file = &self.files[index as usize];
-        let content = fs::read_to_string(&mut selected_file).unwrap();
-        content.to_string()
+        let selected_file = &self.files[index as usize];
+        fs::read_to_string(selected_file).unwrap()
     }
 
     pub fn write(self, file: String, content: String) {

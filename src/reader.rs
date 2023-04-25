@@ -4,7 +4,7 @@ use toml::Value;
 
 const BASE_FILENAME: &str = "accounts.toml";
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct TOMLReader {
     pub directory: String,
     pub filename: String,
@@ -32,7 +32,7 @@ impl TOMLReader {
 
     pub fn read_from_file(self) -> Value {
         let file = format!("{}/{}", self.directory, self.filename);
-        let content = fs::read_to_string(&file).unwrap();
+        let content = fs::read_to_string(file).unwrap();
         content.parse::<Value>().unwrap()
     }
 }
