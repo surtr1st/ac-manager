@@ -1,9 +1,7 @@
 pub mod app_layout;
-pub mod key_mapping;
 pub mod manager;
 pub mod query;
 pub mod reader;
-pub mod stateful_list;
 pub mod term_event;
 
 use crossterm::{
@@ -34,10 +32,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?;
 
-    let items = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"]
-        .iter()
+    let items = vec!["Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"];
+    let list_items = &items.iter()
         .map(|i| ListItem::new(i.to_string()))
-        .collect::<Vec<ListItem>>();
+        .collect::<Vec<ListItem>>(); 
 
     let mut list_state = ListState::default();
     list_state.select(Some(0));
@@ -46,7 +44,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         terminal.draw(|f| {
             let chunks = app_layout::block_part(f);
             let select_block = Block::default().title("Container").borders(Borders::ALL);
-            let list = app_layout::render_list(select_block, items.clone());
+            let list = app_layout::render_list(select_block, list_items.clone());
             f.render_stateful_widget(list, chunks[0], &mut list_state);
         })?;
 
@@ -76,13 +74,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 KeyCode::Enter => {
                     // restore terminal
-                    disable_raw_mode()?;
-                    execute!(
-                        terminal.backend_mut(),
-                        LeaveAlternateScreen,
-                        DisableMouseCapture
-                    )?;
-                    terminal.show_cursor()?;
+                    let content = items[index];
+                    println!("{}", content);
                     break;
                 }
                 _ => {}
@@ -90,6 +83,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             TerminalEvent::Tick => {}
         }
     }
+
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+    terminal.show_cursor()?;
 
     Ok(())
 }
@@ -111,7 +112,7 @@ fn mpsc_setup() -> mpsc::Receiver<TerminalEvent<event::KeyEvent>> {
             }
 
             if last_tick.elapsed() >= tick_rate {
-                if let Ok(_) = tx.send(TerminalEvent::Tick) {
+                if let Ok(()) = tx.send(TerminalEvent::Tick) {
                     last_tick = Instant::now();
                 }
             }
